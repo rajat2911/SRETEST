@@ -1,0 +1,51 @@
+#Simple Build using Jenkins
+
+#Considering that Docker & GIT SVN is already installed on my machine 
+
+#I have to first integrate the GIT repository so that it can download the docker file on the GIT repository https://github.com/rajat2911/SRETEST.git 
+
+ls 
+
+cd  Question 1
+
+docker info 
+
+docker build -t nginx-app:1.9 . 
+
+docker tag nginx-app:1.9 nginx-app:latest 
+
+docker images
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## Pipeline example for Building using jenkins 
+
+pipeline {
+  environment {
+    registry = "docker registry name"
+    registryCredential = 'docker registry credentials'
+    dockerImage = ''
+  }
+  agent any
+  stages {
+    stage('Cloning Git Repository') {
+      steps {
+        git 'https://github.com/rajat2911/SRETEST.git'
+      }
+    }
+    stage('Building image') {
+      steps{
+        script {
+          dockerImage = docker.build registry + ":$BUILD_NUMBER"
+        }
+      }
+    }
+    stage('Deploy Image') {
+      steps{
+        script {
+          docker.withRegistry( '', registryCredential ) {
+            dockerImage.push()
+          }
+        }
+      }
+    }
